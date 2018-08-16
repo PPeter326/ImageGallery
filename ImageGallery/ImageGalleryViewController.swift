@@ -91,6 +91,24 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         return UIDropProposal(operation: .move)
     }
     
+    func dropInteraction(_ interaction: UIDropInteraction, sessionDidEnter session: UIDropSession) {
+        
+        for item in session.items {
+            let dropPreview = UIView(frame: CGRect(x: 0, y: 0, width: 50, height: 50))
+            dropPreview.backgroundColor = UIColor.red
+            dropPreview.alpha = 0.5
+            item.previewProvider = {
+                return UIDragPreview(view: dropPreview)
+            }
+        }
+    }
+    
+    func dropInteraction(_ interaction: UIDropInteraction, sessionDidExit session: UIDropSession) {
+        for item in session.items {
+            item.previewProvider = nil
+        }
+    }
+    
     func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
         
         if let sourceIndexPath = dragItemIndexPath {

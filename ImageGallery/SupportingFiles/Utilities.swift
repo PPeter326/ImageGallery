@@ -239,7 +239,7 @@ extension UIView {
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return image
-    }
+    }    
 }
 
 extension UIDocumentState: CustomStringConvertible {
