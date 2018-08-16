@@ -102,9 +102,11 @@
                                 <action selector="close:" destination="eW5-Ci-u21" id="0Az-9h-9lv"/>
                             </connections>
                         </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="Item" id="Fqz-mZ-cY2"/>
                     </navigationItem>
                     <connections>
                         <outlet property="imageGalleryCollectionView" destination="uRp-l8-MTr" id="oLL-ri-V4t"/>
+                        <outlet property="trashBarButton" destination="Fqz-mZ-cY2" id="SKo-wO-BQO"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pgF-tt-zaB" sceneMemberID="firstResponder"/>

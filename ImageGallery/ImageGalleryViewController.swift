@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UICollectionViewDropDelegate, UICollectionViewDragDelegate {
+class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UICollectionViewDropDelegate, UICollectionViewDragDelegate, UIDropInteractionDelegate {
     
     // MARK: - Model
     var imageGallery: ImageGallery? {
@@ -31,6 +31,11 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     
     // MARK: - Navigation item configuration
     
+    @IBOutlet weak var trashBarButton: UIBarButtonItem! {
+        didSet {
+            trashBarButton.customView = createDropInteractionView()
+        }
+    }
     
     
 //    @IBAction func save(_ sender: UIBarButtonItem? = nil) {
@@ -48,6 +53,16 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         }
     }
     
+    private func createDropInteractionView() -> UIView {
+        let frame = CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 100, height: 50))
+        let button = UIButton(type: UIButtonType.system)
+        button.frame = frame
+        button.setImage(UIImage(named: "trashcan2"), for: .normal)
+        button.addInteraction(UIDropInteraction(delegate: self))
+        return button
+    }
+  
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         document?.open { success in
@@ -61,6 +76,34 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         document?.close()
+    }
+    
+    // MARK: - Navigation Bar Button - drop to delete
+    func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
+        if (session.localDragSession?.localContext as? UICollectionView) == imageGalleryCollectionView {
+            return session.canLoadObjects(ofClass: NSURL.self)
+        } else {
+            return false
+        }
+    }
+    
+    func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
+        return UIDropProposal(operation: .move)
+    }
+    
+    func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
+        
+        if let sourceIndexPath = dragItemIndexPath {
+            imageGalleryCollectionView.performBatchUpdates({
+                galleryImages?.remove(at: sourceIndexPath.item)
+                imageGalleryCollectionView.deleteItems(at: [sourceIndexPath])
+            })
+            dragItemIndexPath = nil
+            documentChanged()
+            
+            
+        }
+        
     }
     
     // MARK: - COLLECTION VIEW
@@ -152,6 +195,8 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         return dragItems(at: indexPath)
     }
     
+    var dragItemIndexPath: IndexPath?
+    
     private func dragItems(at indexPath: IndexPath) -> [UIDragItem] {
         // The drag item is created from URL only, but it carries the whole imageTask in localObject which will allow rearranging items within the drag and drop view
         if let image = galleryImages?[indexPath.item] {
@@ -159,6 +204,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
             let urlItemProvider = NSItemProvider(object: urlProvider)
             let dragItem = UIDragItem(itemProvider: urlItemProvider)
             dragItem.localObject = image
+            dragItemIndexPath = indexPath
             return [dragItem]
         } else {
             return []

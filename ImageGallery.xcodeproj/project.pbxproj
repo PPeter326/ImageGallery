@@ -20,6 +20,7 @@
 		F9C3FB132125E9B400E1CAC4 /* ImageGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9C3FB0D2125E9B400E1CAC4 /* ImageGallery.swift */; };
 		F9C3FB142125E9B400E1CAC4 /* ImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9C3FB0E2125E9B400E1CAC4 /* ImageViewController.swift */; };
 		F9C3FB152125E9B400E1CAC4 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9C3FB0F2125E9B400E1CAC4 /* Utilities.swift */; };
+		F9C3FB1721262AFF00E1CAC4 /* BarButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9C3FB1621262AFF00E1CAC4 /* BarButtonView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 		F9C3FB0D2125E9B400E1CAC4 /* ImageGallery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageGallery.swift; sourceTree = "<group>"; };
 		F9C3FB0E2125E9B400E1CAC4 /* ImageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageViewController.swift; sourceTree = "<group>"; };
 		F9C3FB0F2125E9B400E1CAC4 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		F9C3FB1621262AFF00E1CAC4 /* BarButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarButtonView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +114,7 @@
 				F9C3FADF2125E81400E1CAC4 /* Main.storyboard */,
 				F9C3FAD92125E81400E1CAC4 /* DocumentBrowserViewController.swift */,
 				F9C3FB0D2125E9B400E1CAC4 /* ImageGallery.swift */,
+				F9C3FB1621262AFF00E1CAC4 /* BarButtonView.swift */,
 				F9C3FB0C2125E9B400E1CAC4 /* ImageGalleryViewController.swift */,
 				F9C3FB0E2125E9B400E1CAC4 /* ImageViewController.swift */,
 				F9C3FB092125E8FD00E1CAC4 /* SupportingFiles */,
@@ -282,6 +285,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9C3FB1721262AFF00E1CAC4 /* BarButtonView.swift in Sources */,
 				F9C3FADE2125E81400E1CAC4 /* ImageGalleryDocument.swift in Sources */,
 				F9C3FB122125E9B400E1CAC4 /* ImageGalleryViewController.swift in Sources */,
 				F9C3FADA2125E81400E1CAC4 /* DocumentBrowserViewController.swift in Sources */,
