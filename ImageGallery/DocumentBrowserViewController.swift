@@ -19,7 +19,7 @@ class DocumentBrowserViewController: UIDocumentBrowserViewController, UIDocument
         allowsDocumentCreation = false
         allowsPickingMultipleItems = false
         if UIDevice.current.userInterfaceIdiom == .pad { // only allow document creation on ipad
-            temp = try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("Untitled.json")
+            temp = try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent("Untitled.imagegallery")
             if temp != nil {
                 allowsDocumentCreation = FileManager.default.createFile(atPath: temp!.path, contents: Data())
             }

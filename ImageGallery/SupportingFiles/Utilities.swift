@@ -88,6 +88,24 @@ extension URL {
     }
 }
 
+class TaskHandler {
+    
+    var url: URL?
+    var aspectRatio: CGFloat?
+    
+    private var handler: (URL, CGFloat) -> Void
+    
+    init(handler: @escaping (URL, CGFloat) -> Void) {
+        self.handler = handler
+    }
+    
+    func process() {
+        if url != nil && aspectRatio != nil {
+            handler(url!, aspectRatio!)
+        }
+    }
+}
+
 extension UIImage
 {
     private static let localImagesDirectory = "UIImage.storeLocallyAsJPEG"

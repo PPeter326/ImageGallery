@@ -6,7 +6,6 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
-        <capability name="Navigation items with more than one left or right bar item" minToolsVersion="7.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -98,18 +97,11 @@
                         <viewLayoutGuide key="safeArea" id="Icj-u5-qfV"/>
                     </view>
                     <navigationItem key="navigationItem" id="UYD-rf-ch5">
-                        <leftBarButtonItems>
-                            <barButtonItem systemItem="save" id="FRs-Xl-1t3">
-                                <connections>
-                                    <action selector="save:" destination="eW5-Ci-u21" id="lxY-vc-2Em"/>
-                                </connections>
-                            </barButtonItem>
-                            <barButtonItem systemItem="done" id="e7w-5j-Pa2">
-                                <connections>
-                                    <action selector="close:" destination="eW5-Ci-u21" id="0Az-9h-9lv"/>
-                                </connections>
-                            </barButtonItem>
-                        </leftBarButtonItems>
+                        <barButtonItem key="leftBarButtonItem" systemItem="done" id="e7w-5j-Pa2">
+                            <connections>
+                                <action selector="close:" destination="eW5-Ci-u21" id="0Az-9h-9lv"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="imageGalleryCollectionView" destination="uRp-l8-MTr" id="oLL-ri-V4t"/>

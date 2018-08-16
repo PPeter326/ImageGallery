@@ -33,8 +33,8 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     
     
     
-    @IBAction func save(_ sender: UIBarButtonItem? = nil) {
-        
+//    @IBAction func save(_ sender: UIBarButtonItem? = nil) {
+    func documentChanged() {
         document?.imageGallery = imageGallery
         if document?.imageGallery != nil {
             document?.updateChangeCount(.done)
@@ -42,7 +42,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     }
 	
     @IBAction func close(_ sender: UIBarButtonItem) {
-        save()
+//        save()
         dismiss(animated: true) {
             self.document?.close()
         }
@@ -58,7 +58,10 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         }
     }
     
-    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        document?.close()
+    }
     
     // MARK: - COLLECTION VIEW
     
@@ -197,6 +200,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
                         imageGalleryCollectionView.insertItems(at: [destinationIndexPath])
                     })
                     coordinator.drop(item.dragItem, toItemAt: destinationIndexPath)
+                    documentChanged()
                 }
                 
             } else {
@@ -216,6 +220,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
                         } else {
                             self?.galleryImages = [image]
                         }
+                        self?.documentChanged()
 					})
 				}
                 // load URL and image asynchronously, then process handler
@@ -248,6 +253,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         case .changed: // changes the zoom factor by the scale
             zoomFactor *= pinchGestureRecognizer.scale
             pinchGestureRecognizer.scale = 1.0 // reset scale so that it's not cumulative
+            documentChanged()
         default: return
         }
         
