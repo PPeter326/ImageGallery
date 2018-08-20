@@ -164,9 +164,15 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         return cell
     }
 	
+    let cache = URLCache.shared
+    
 	private  func fetchImage(url: URL ,completion: @escaping (UIImage?) -> Void) {
-		DispatchQueue.global(qos: .userInitiated).async {
-			let data = try? Data(contentsOf: url.imageURL)
+		DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            // cache response from url
+            let cachedResponse = self?.cache.cachedResponse(for: URLRequest(url: url.imageURL))
+            let data = cachedResponse?.data
+//            let data = try? Data(contentsOf: url.imageURL)
+//            let data = try? Data(contentsOf: url.imageURL, options: Data.ReadingOptions.alwaysMapped)
 			if let imageData = data {
 				DispatchQueue.main.async {
 					let image = UIImage(data: imageData)
@@ -328,9 +334,8 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 		if segue.identifier == "ShowImage" {
 			if let imageVC = segue.destination as? ImageViewController {
-				if let imageCell = sender as? ImageCollectionViewCell, let indexPath = imageGalleryCollectionView.indexPath(for: imageCell), let imageInfo = imageGallery?.images[indexPath.item] {
-					let imageURL = imageInfo.url
-					imageVC.url = imageURL
+				if let imageCell = sender as? ImageCollectionViewCell {
+					imageVC.image = imageCell.imageView.image
 				}
 			}
 		}

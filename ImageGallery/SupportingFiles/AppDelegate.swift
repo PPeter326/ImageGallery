@@ -16,6 +16,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        // create Cahce, then set as default shared cache
+        // memory capacity and disk capacity - allocate about 40 mb for each, given that most premium images are 1 mb in size.  This will give user the ability to cache 80 images total, which should improve the user experience without using too much storage.
+        let cache = URLCache(memoryCapacity: 40 * 1024 * 1024, diskCapacity: 40 * 1024 * 1024, diskPath: nil)
+        URLCache.shared = cache
+        
         return true
     }
 

@@ -28,18 +28,6 @@ class ImageViewController: UIViewController, UIScrollViewDelegate {
 	}
 	
 	
-	
-	// MARK: Model
-	var url: URL? {
-		didSet {
-			image = nil // reset image when url changes
-			
-			if view.window != nil { // only fetch image if the outlet for the view is set
-				fetchImage()
-			}
-		}
-	}
-	
 	var image: UIImage? {
 		get {
 			return imageView.image
@@ -62,26 +50,7 @@ class ImageViewController: UIViewController, UIScrollViewDelegate {
 		}
 	}
 	
-	// MARK: Async calls to fetch image
-	override func viewDidAppear(_ animated: Bool) {
-		super.viewDidAppear(animated)
-		if image == nil {
-			fetchImage()
-		}
-	}
 
-	private func fetchImage() {
-		guard let imageURL = url?.imageURL else { return }
-		spinner.startAnimating()
-		DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-			let data = try? Data(contentsOf: imageURL)
-			if let imageData = data {
-				DispatchQueue.main.async {
-					self?.image = UIImage(data: imageData)
-				}
-			}
-		}
-	}
 	
 	// MARK: Zooming
 	func viewForZooming(in scrollView: UIScrollView) -> UIView? {
