@@ -48,6 +48,11 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
 	
     @IBAction func close(_ sender: UIBarButtonItem) {
 //        save()
+        if let firstCell = imageGalleryCollectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? ImageCollectionViewCell {
+            if document?.imageGallery != nil {
+                document?.thumbnail = firstCell.imageView.snapshot
+            }
+        }
         dismiss(animated: true) {
             self.document?.close()
         }
@@ -169,18 +174,20 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
 	private  func fetchImage(url: URL ,completion: @escaping (UIImage?) -> Void) {
 		DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             // cache response from url
-            let cachedResponse = self?.cache.cachedResponse(for: URLRequest(url: url.imageURL))
-            let data = cachedResponse?.data
-//            let data = try? Data(contentsOf: url.imageURL)
-//            let data = try? Data(contentsOf: url.imageURL, options: Data.ReadingOptions.alwaysMapped)
-			if let imageData = data {
-				DispatchQueue.main.async {
-					let image = UIImage(data: imageData)
-					completion(image)
-				}
-			} else {
-				completion(nil)
-			}
+            var data: Data?
+            if let cachedResponse = self?.cache.cachedResponse(for: URLRequest(url: url.imageURL)) {
+                data = cachedResponse.data
+            } else {
+                data = try? Data(contentsOf: url.imageURL)
+            }
+            DispatchQueue.main.async {
+                if let imageData = data {
+                        let image = UIImage(data: imageData)
+                        completion(image)
+                } else {
+                    completion(nil)
+                }
+            }
 		}
 	}
     // MARK: Layout
