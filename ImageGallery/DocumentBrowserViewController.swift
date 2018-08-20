@@ -27,7 +27,7 @@ class DocumentBrowserViewController: UIDocumentBrowserViewController, UIDocument
 
     }
     
-    var temp: URL?
+    private var temp: URL?
     
     // MARK: UIDocumentBrowserViewControllerDelegate
     

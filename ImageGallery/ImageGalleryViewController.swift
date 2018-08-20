@@ -39,7 +39,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     
     
 //    @IBAction func save(_ sender: UIBarButtonItem? = nil) {
-    func documentChanged() {
+    private func documentChanged() {
         document?.imageGallery = imageGallery
         if document?.imageGallery != nil {
             document?.updateChangeCount(.done)
@@ -126,7 +126,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     
     // MARK: - COLLECTION VIEW
     
-    var galleryImages: [(url: URL, aspectRatio: CGFloat)]?
+    private var galleryImages: [(url: URL, aspectRatio: CGFloat)]?
     
     // MARK: Outlet
     @IBOutlet weak var imageGalleryCollectionView: UICollectionView! {
@@ -164,7 +164,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         return cell
     }
 	
-    let cache = URLCache.shared
+    private let cache = URLCache.shared
     
 	private  func fetchImage(url: URL ,completion: @escaping (UIImage?) -> Void) {
 		DispatchQueue.global(qos: .userInitiated).async { [weak self] in
