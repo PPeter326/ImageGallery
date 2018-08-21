@@ -14,15 +14,15 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     var imageGallery: ImageGallery? {
         get {
             // retrieve data from the view, then instantiate imagegallery data
-            if let images = galleryImages?.map({ ImageGallery.ImageInfo(url: $0.url, aspectRatio: $0.aspectRatio) }) {
-                return ImageGallery(images: images)
+            if let imageInfos = galleryImages?.map({ ImageGallery.ImageInfo(url: $0.url, aspectRatio: $0.aspectRatio, localUrlPathComponent: $0.localUrlPathComponent ) }) {
+                return ImageGallery(imageInfos: imageInfos)
             } else {
                 return nil
             }
         }
         set {
             // reset view from new value
-            galleryImages = newValue?.images.map { ($0.url, $0.aspectRatio) }
+            galleryImages = newValue?.imageInfos.map { ($0.url, $0.aspectRatio, $0.localUrlPathComponent) }
             imageGalleryCollectionView.reloadData()
         }
     }
@@ -131,7 +131,9 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     
     // MARK: - COLLECTION VIEW
     
-    private var galleryImages: [(url: URL, aspectRatio: CGFloat)]?
+    private var galleryImages: [(url: URL, aspectRatio: CGFloat, localUrlPathComponent: String?)]?
+    
+    private var tempGalleryImages: [(url: URL, image: UIImage)]?
     
     // MARK: Outlet
     @IBOutlet weak var imageGalleryCollectionView: UICollectionView! {
@@ -154,12 +156,14 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ImageCell", for: indexPath)
         if let imageCell = cell as? ImageCollectionViewCell {
             imageCell.spinner.isHidden = false
-			guard let image = galleryImages?[indexPath.item] else { return cell }
-			fetchImage(url: image.url) { (image) in
+			guard let galleryImageInfo = galleryImages?[indexPath.item] else { return cell }
+			fetchImage(imageInfo: (galleryImageInfo.url, galleryImageInfo.localUrlPathComponent)) { [weak self] (image, localUrlPathComponent) in
+                self?.galleryImages?[indexPath.item].localUrlPathComponent = localUrlPathComponent
                 if let image = image {
                     imageCell.imageView.image = image
                 } else {
                     // If there's no image loaded, show image with frown face
+                    print("invalid URL: \(galleryImageInfo.url)")
                     imageCell.imageView.image = UIImage(named: "FrownFace")
                 }
                 // spinner hides automatically when it stops animating
@@ -171,25 +175,76 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
 	
     private let cache = URLCache.shared
     
-	private  func fetchImage(url: URL ,completion: @escaping (UIImage?) -> Void) {
+    private  func fetchImage(imageInfo: (url: URL, localUrlPathComponent: String?) ,completion: @escaping (UIImage?, String?) -> Void) {
+        var image: UIImage?
+        var localUrlPathComponent: String?
 		DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            // cache response from url
-            var data: Data?
-            if let cachedResponse = self?.cache.cachedResponse(for: URLRequest(url: url.imageURL)) {
-                data = cachedResponse.data
+            if let localUrlPathComponent = imageInfo.localUrlPathComponent {
+                image = self?.fetchLocalImage(localUrlPathComponent: localUrlPathComponent)
             } else {
-                data = try? Data(contentsOf: url.imageURL)
-            }
-            DispatchQueue.main.async {
-                if let imageData = data {
-                        let image = UIImage(data: imageData)
-                        completion(image)
+                if let fetchedImage = self?.fetchImageFromUrl(url: imageInfo.url){
+                    image = fetchedImage
                 } else {
-                    completion(nil)
+                    if let imageInfo = self?.storeLocalImage(url: imageInfo.url) {
+                        let localImage = imageInfo.0; let pathComponent = imageInfo.1
+                        image = localImage
+                        localUrlPathComponent = pathComponent
+                    }
                 }
             }
-		}
+            DispatchQueue.main.async {
+                completion(image, localUrlPathComponent)
+            }
+        }
 	}
+    
+    private func storeLocalImage(url: URL) -> (UIImage?, String)? {
+        if tempGalleryImages != nil {
+            //grab image from temp image array where the UIImage was dropped
+            var tempImage: UIImage?
+            for tempGalleryImage in tempGalleryImages! {
+                if tempGalleryImage.url == url {
+                    tempImage = tempGalleryImage.image
+                }
+            }
+            // create local file storage for the local image
+            if let localImage = tempImage, let imageData = UIImageJPEGRepresentation(localImage, 1.0) {
+                
+                // locate file directory
+                let date = Date().timeIntervalSince1970
+                let dateInString = String(describing: date)
+                if let fileurl = try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent(dateInString) {
+                    // create file with local component
+                    if FileManager.default.createFile(atPath: fileurl.path, contents: imageData, attributes: nil) {
+                        
+                        if let retrievedImage = fetchLocalImage(localUrlPathComponent: dateInString) {
+                            return (retrievedImage, dateInString)
+                        }
+                    }
+                }
+            }
+        }
+        return nil
+    }
+    
+    private func fetchImageFromUrl(url: URL) -> UIImage? {
+        // cache response from url
+        var data: Data?
+        if let cachedResponse = cache.cachedResponse(for: URLRequest(url: url.imageURL)) {
+            data = cachedResponse.data
+        } else {
+            data = try? Data(contentsOf: url.imageURL)
+        }
+        guard let imageData = data else { return nil}
+        return UIImage(data: imageData)
+    }
+    
+    private func fetchLocalImage(localUrlPathComponent: String) -> UIImage? {
+        if let url = try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent(localUrlPathComponent), let imageData = try? Data(contentsOf: url) {
+            return UIImage(data: imageData)
+        }
+        return nil
+    }
     // MARK: Layout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let cellWidth = view.frame.width.zoomedBy(zoomFactor)
@@ -269,10 +324,10 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
                 
                 if let sourceIndexPath = item.sourceIndexPath,
                     let destinationIndexPath = coordinator.destinationIndexPath,
-                    let image = item.dragItem.localObject as? (URL, CGFloat) {
+                    let imageInfo = item.dragItem.localObject as? (URL, CGFloat, String?) {
                     imageGalleryCollectionView.performBatchUpdates({
                         galleryImages?.remove(at: sourceIndexPath.item)
-                        galleryImages?.insert(image, at: destinationIndexPath.item)
+                        galleryImages?.insert(imageInfo, at: destinationIndexPath.item)
                         imageGalleryCollectionView.deleteItems(at: [sourceIndexPath])
                         imageGalleryCollectionView.insertItems(at: [destinationIndexPath])
                     })
@@ -288,8 +343,14 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
                 // Use placeholder cell while waiting for image and url to load.  The image task handler will replace placeholder cell with final content when both image and url are loaded.
                 let placeHolder = UICollectionViewDropPlaceholder(insertionIndexPath: destinationIndexPath, reuseIdentifier: "DropPlaceholderCell")
                 let placeholderContext = coordinator.drop(item.dragItem, to: placeHolder)
-				let taskHandler = TaskHandler { (url, aspectRatio) in
-                    let image = (url, aspectRatio)
+				let taskHandler = TaskHandler { (url, aspectRatio, image) in
+                    if self.tempGalleryImages != nil {
+                        self.tempGalleryImages!.append((url, image))
+                    } else {
+                        self.tempGalleryImages = [(url, image)]
+                    }
+                    let localurl: String? = nil
+                    let image = (url, aspectRatio, localurl)
 					// weak reference to view controller because user may switch to a different document before image is loaded
 					placeholderContext.commitInsertion(dataSourceUpdates: { [weak self] indexPath in
                         if self?.galleryImages != nil {
@@ -314,6 +375,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
                     DispatchQueue.main.async {
                         if let loadedImage = provider as? UIImage {
                             let aspectRatio = AspectRatio.calcAspectRatio(size: loadedImage.size)
+                            taskHandler.image = loadedImage
                             taskHandler.aspectRatio = aspectRatio
                             taskHandler.process()
                         }

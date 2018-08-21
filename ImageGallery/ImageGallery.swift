@@ -14,16 +14,17 @@ struct ImageGallery: Codable {
     struct ImageInfo: Codable {
         var url: URL
         var aspectRatio: CGFloat
+        var localUrlPathComponent: String?
     }
     
-	var images: [ImageInfo]
+	var imageInfos: [ImageInfo]
     
     var jsonData: Data? {
         return try? JSONEncoder().encode(self)
     }
 	
-    init(images: [ImageInfo]) {
-        self.images = images
+    init(imageInfos: [ImageInfo]) {
+        self.imageInfos = imageInfos
     }
     
     init?(data: Data) {
