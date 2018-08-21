@@ -14,7 +14,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     var imageGallery: ImageGallery? {
         get {
             // retrieve data from the view, then instantiate imagegallery data
-            if let imageInfos = galleryImages?.map({ ImageGallery.ImageInfo(url: $0.url, aspectRatio: $0.aspectRatio, localUrlPathComponent: $0.localUrlPathComponent ) }) {
+            if let imageInfos = galleryImages?.map({ ImageGallery.ImageInfo(url: $0.url, aspectRatio: $0.aspectRatio, localUrlPathComponent: $0.localUrlPathComponent) }) {
                 return ImageGallery(imageInfos: imageInfos)
             } else {
                 return nil
@@ -159,6 +159,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
 			guard let galleryImageInfo = galleryImages?[indexPath.item] else { return cell }
 			fetchImage(imageInfo: (galleryImageInfo.url, galleryImageInfo.localUrlPathComponent)) { [weak self] (image, localUrlPathComponent) in
                 self?.galleryImages?[indexPath.item].localUrlPathComponent = localUrlPathComponent
+                self?.documentChanged()
                 if let image = image {
                     imageCell.imageView.image = image
                 } else {
@@ -216,7 +217,6 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
                 if let fileurl = try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true).appendingPathComponent(dateInString) {
                     // create file with local component
                     if FileManager.default.createFile(atPath: fileurl.path, contents: imageData, attributes: nil) {
-                        
                         if let retrievedImage = fetchLocalImage(localUrlPathComponent: dateInString) {
                             return (retrievedImage, dateInString)
                         }
