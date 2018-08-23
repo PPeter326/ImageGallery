@@ -50,6 +50,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     
     @IBOutlet weak var trashBarButton: UIBarButtonItem! {
         didSet {
+            trashBarButton.isEnabled = false
             trashBarButton.customView = createDropInteractionView()
         }
     }
@@ -132,6 +133,10 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         }
     }
     
+    func dropInteraction(_ interaction: UIDropInteraction, sessionDidEnd session: UIDropSession) {
+        trashBarButton.isEnabled = false
+    }
+    
     func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
         
         if let sourceIndexPath = dragItemIndexPath {
@@ -188,20 +193,24 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         if let imageCell = cell as? ImageCollectionViewCell {
             imageCell.spinner.isHidden = false
 			guard let galleryImage = galleryImages?[indexPath.item] else { return cell }
-            if let image = fetchImage(from: galleryImage.resource, at: indexPath.item) {
-                imageCell.imageView.image = image
-            } else {
-                imageCell.imageView.image = UIImage(named: "FrownFace")
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                let image = self?.fetchImage(from: galleryImage.resource, at: indexPath.item)
+                DispatchQueue.main.async {
+                    if let image = image {
+                        imageCell.imageView.image = image
+                    } else {
+                        imageCell.imageView.image = UIImage(named: "FrownFace")
+                    }
+                    // spinner hides automatically when it stops animating
+                    imageCell.spinner.stopAnimating()
+                }
             }
-            // spinner hides automatically when it stops animating
-            imageCell.spinner.stopAnimating()
-
         }
         return cell
     }
-	
-    private let cache = URLCache.shared
     
+    private let cache = URLCache.shared
+    // MARK: Image Fetching
     private  func fetchImage(from resource: Resource, at index: Int) -> UIImage? {
         if let url = resource as? URL {
             if let image = self.fetchImageFromUrl(url: url) {
@@ -236,6 +245,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
                 // create file with local component
                 if FileManager.default.createFile(atPath: fileurl.path, contents: imageData, attributes: nil) {
                     if let retrievedImage = fetchLocalImage(fileName: dateInString) {
+                        print("new file created at \(fileurl.path)")
                         return (retrievedImage, dateInString)
                     }
                 }
@@ -289,6 +299,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     
     // MARK: Drag
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        print(#function)
         // Provide local context to drag session, so that it'll be easy to distinguish in-app vs external drag
         session.localContext = collectionView
         return dragItems(at: indexPath)
@@ -318,8 +329,20 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         }
     }
 	
+    func collectionView(_ collectionView: UICollectionView, dragSessionWillBegin session: UIDragSession) {
+        trashBarButton.isEnabled = true
+        print(#function)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, dragSessionDidEnd session: UIDragSession) {
+        print(#function)
+        trashBarButton.isEnabled = false
+    }
+    
+    
     // MARK: Drop
     func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {
+        print(#function)
         // The drop accepts NSURL only if it's within collection view (saved by local context).  External data from outside of the app must have both URL and image to be accepted.
         var canHandle: Bool
         if (session.localDragSession?.localContext as? UICollectionView) == collectionView {
@@ -337,8 +360,14 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         return UICollectionViewDropProposal(operation: isSelf ? .move : .copy, intent: .insertAtDestinationIndexPath)
     }
     
-    
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidEnter session: UIDropSession) {
+        print(#function)
+    }
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidExit session: UIDropSession) {
+        print(#function)
+    }
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
+        print(#function)
         for item in coordinator.items {
             
             if item.isLocal {
@@ -347,10 +376,12 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
                     let destinationIndexPath = coordinator.destinationIndexPath,
                     let imageInfo = item.dragItem.localObject as? (Resource, CGFloat) {
                     imageGalleryCollectionView.performBatchUpdates({
-                        galleryImages?.remove(at: sourceIndexPath.item)
-                        galleryImages?.insert(imageInfo, at: destinationIndexPath.item)
-                        imageGalleryCollectionView.deleteItems(at: [sourceIndexPath])
-                        imageGalleryCollectionView.insertItems(at: [destinationIndexPath])
+                        if galleryImages!.count > 1 {
+                            galleryImages?.remove(at: sourceIndexPath.item)
+                            galleryImages?.insert(imageInfo, at: destinationIndexPath.item)
+                            imageGalleryCollectionView.deleteItems(at: [sourceIndexPath])
+                            imageGalleryCollectionView.insertItems(at: [destinationIndexPath])
+                        }
                     })
                     coordinator.drop(item.dragItem, toItemAt: destinationIndexPath)
                     documentChanged()
@@ -404,6 +435,11 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
                 
             }
         }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidEnd session: UIDropSession) {
+        print(#function)
+        trashBarButton.isEnabled = false
     }
     
     // MARK: - Gesture
