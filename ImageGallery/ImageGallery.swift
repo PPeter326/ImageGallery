@@ -12,9 +12,9 @@ import UIKit
 struct ImageGallery: Codable {
 	
     struct ImageInfo: Codable {
-        var url: URL
+        var url: URL?
         var aspectRatio: CGFloat
-        var localUrlPathComponent: String?
+        var fileName: String?
     }
     
 	var imageInfos: [ImageInfo]
@@ -34,6 +34,5 @@ struct ImageGallery: Codable {
             return nil
         }
     }
-	
 		
 }

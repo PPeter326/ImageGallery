@@ -37,7 +37,6 @@ class DocumentBrowserViewController: UIDocumentBrowserViewController, UIDocument
     
     func documentBrowser(_ controller: UIDocumentBrowserViewController, didPickDocumentURLs documentURLs: [URL]) {
         guard let sourceURL = documentURLs.first else { return }
-        
         // Present the Document View Controller for the first document that was picked.
         // If you support picking multiple items, make sure you handle them all.
         presentDocument(at: sourceURL)
@@ -55,7 +54,6 @@ class DocumentBrowserViewController: UIDocumentBrowserViewController, UIDocument
     // MARK: Document Presentation
     
     func presentDocument(at documentURL: URL) {
-        
         let storyBoard = UIStoryboard(name: "Main", bundle: nil)
         let documentVC = storyBoard.instantiateViewController(withIdentifier: "DocumentMVC")
         if let imageGalleryVC = documentVC.contents as? ImageGalleryViewController {

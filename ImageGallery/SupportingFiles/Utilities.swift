@@ -107,6 +107,10 @@ class TaskHandler {
     }
 }
 
+protocol Resource { }
+extension String: Resource { }
+extension URL: Resource { }
+
 extension UIImage
 {
     private static let localImagesDirectory = "UIImage.storeLocallyAsJPEG"
