@@ -104,7 +104,7 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     // MARK: - Navigation Bar Button - drop to delete
     func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
         if (session.localDragSession?.localContext as? UICollectionView) == imageGalleryCollectionView {
-            return session.canLoadObjects(ofClass: NSURL.self)
+            return session.canLoadObjects(ofClass: NSURL.self) || session.canLoadObjects(ofClass: NSString.self)
         } else {
             return false
         }
@@ -137,7 +137,9 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         if let sourceIndexPath = dragItemIndexPath {
             imageGalleryCollectionView.performBatchUpdates({
                 let removedImage = galleryImages?.remove(at: sourceIndexPath.item)
-                removeLocalImage(at: (removedImage?.resource as? String))
+                if let fileName = removedImage?.resource as? String {
+                    removeLocalImage(fileName: fileName)
+                }
                 imageGalleryCollectionView.deleteItems(at: [sourceIndexPath])
             })
             dragItemIndexPath = nil
@@ -148,10 +150,10 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         
     }
     
-    private func removeLocalImage(at fileName: String?) {
-        if let fileName = fileName, let url = try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent(fileName) {
+    private func removeLocalImage(fileName: String) {
+        if let url = try? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent(fileName) {
             do {
-            try FileManager.default.removeItem(atPath: url.path)
+                try FileManager.default.removeItem(atPath: url.path)
             } catch let error {
                 print("error \(error) removing file at \(url.path)")
             }
