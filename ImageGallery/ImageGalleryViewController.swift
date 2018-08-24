@@ -299,7 +299,6 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
     
     // MARK: Drag
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        print(#function)
         // Provide local context to drag session, so that it'll be easy to distinguish in-app vs external drag
         session.localContext = collectionView
         return dragItems(at: indexPath)
@@ -331,18 +330,15 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
 	
     func collectionView(_ collectionView: UICollectionView, dragSessionWillBegin session: UIDragSession) {
         trashBarButton.isEnabled = true
-        print(#function)
     }
     
     func collectionView(_ collectionView: UICollectionView, dragSessionDidEnd session: UIDragSession) {
-        print(#function)
         trashBarButton.isEnabled = false
     }
     
     
     // MARK: Drop
     func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {
-        print(#function)
         // The drop accepts NSURL only if it's within collection view (saved by local context).  External data from outside of the app must have both URL and image to be accepted.
         var canHandle: Bool
         if (session.localDragSession?.localContext as? UICollectionView) == collectionView {
@@ -360,12 +356,6 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
         return UICollectionViewDropProposal(operation: isSelf ? .move : .copy, intent: .insertAtDestinationIndexPath)
     }
     
-    func collectionView(_ collectionView: UICollectionView, dropSessionDidEnter session: UIDropSession) {
-        print(#function)
-    }
-    func collectionView(_ collectionView: UICollectionView, dropSessionDidExit session: UIDropSession) {
-        print(#function)
-    }
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
         print(#function)
         for item in coordinator.items {
@@ -419,6 +409,8 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
                         if let imageURL = provider as? URL {
                             taskHandler.url = imageURL
                             taskHandler.process()
+                        } else {
+                            placeholderContext.deletePlaceholder()
                         }
                     }
                 }
@@ -429,12 +421,15 @@ class ImageGalleryViewController: UIViewController, UICollectionViewDelegate, UI
                             taskHandler.image = loadedImage
                             taskHandler.aspectRatio = aspectRatio
                             taskHandler.process()
+                        } else {
+                            placeholderContext.deletePlaceholder()
                         }
                     }
                 }
                 
             }
         }
+        coordinator.session.progressIndicatorStyle = .none
     }
     
     func collectionView(_ collectionView: UICollectionView, dropSessionDidEnd session: UIDropSession) {
